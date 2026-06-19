@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -97,6 +98,8 @@ with col1:
             ignore_index=True
         )
 
+        st.rerun()
+
 with col2:
 
     if st.button("➖ Eliminar último generador"):
@@ -107,6 +110,8 @@ with col2:
                 st.session_state.datos.iloc[:-1]
                 .reset_index(drop=True)
             )
+
+            st.rerun()
 
 # ---------------------------------------------------
 # RESTRICCIONES GLOBALES
@@ -308,98 +313,77 @@ if st.button("Optimizar"):
                 )
 
             # ----------------------------------------
-# GRÁFICOS
-# ----------------------------------------
+            # DATOS PARA LOS GRÁFICOS
+            # ----------------------------------------
 
-# Emisiones por generador
-emisiones_generador = pd.DataFrame({
+            emisiones_generador = pd.DataFrame({
 
-    "Generador": datos["Generador"],
+                "Generador": datos["Generador"],
 
-    "Emisiones (kg CO₂)": (
+                "Emisiones (kg CO₂)": (
 
-        resultado.x * emisiones
+                    resultado.x * emisiones
 
-    ).round(2)
+                ).round(2)
 
-})
+            })
 
-# Costos por generador
-costos_generador = pd.DataFrame({
+            costos_generador = pd.DataFrame({
 
-    "Generador": datos["Generador"],
+                "Generador": datos["Generador"],
 
-    "Costo utilizado (USD)": (
+                "Costo (USD)": (
 
-        resultado.x * costos
+                    resultado.x * costos
 
-    ).round(2)
+                ).round(2)
 
-})
+            })
 
-st.subheader("Análisis de resultados")
+            # ----------------------------------------
+            # GRÁFICOS
+            # ----------------------------------------
 
-col1, col2, col3 = st.columns(3)
+            st.subheader("Visualización de resultados")
 
-# ----------------------------------------
-# PRODUCCIÓN
-# ----------------------------------------
+            col1, col2, col3 = st.columns(3)
 
-with col1:
+            with col1:
 
-    st.markdown("### 🔵 Producción")
+                st.markdown("### Producción")
 
-    st.bar_chart(
+                st.bar_chart(
 
-        solucion.set_index(
-            "Generador"
-        )
+                    solucion.set_index(
+                        "Generador"
+                    )
 
-    )
+                )
 
-# ----------------------------------------
-# EMISIONES
-# ----------------------------------------
+            with col2:
 
-with col2:
+                st.markdown("### Emisiones")
 
-    st.markdown("### 🔴 Emisiones")
+                st.bar_chart(
 
-    st.bar_chart(
+                    emisiones_generador.set_index(
+                        "Generador"
+                    )
 
-        emisiones_generador.set_index(
-            "Generador"
-        )
+                )
 
-    )
+            with col3:
 
-# ----------------------------------------
-# COSTOS
-# ----------------------------------------
+                st.markdown("### Costos")
 
-with col3:
+                st.bar_chart(
 
-    st.markdown("### 🟢 Costos")
+                    costos_generador.set_index(
+                        "Generador"
+                    )
 
-    st.bar_chart(
+                )
 
-        costos_generador.set_index(
-            "Generador"
-        )
-
-    )
-
-st.subheader(
-    "Dinero utilizado por cada fuente"
-)
-
-st.bar_chart(
-
-    costos_generador.set_index(
-        "Generador"
-    )
-
-)
         else:
 
             st.error(
@@ -411,3 +395,4 @@ st.bar_chart(
         st.error(
             f"Error: {e}"
         )
+```
