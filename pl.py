@@ -43,41 +43,6 @@ if "datos" not in st.session_state:
 
 st.subheader("Parámetros de los generadores")
 
-# ---------------------------------------------------
-# BOTONES AGREGAR Y ELIMINAR
-# ---------------------------------------------------
-
-col1, col2 = st.columns(2)
-
-with col1:
-
-    if st.button("➕ Agregar generador"):
-
-        nueva_fila = pd.DataFrame({
-            "Generador": ["Nuevo"],
-            "Costo": [0],
-            "Generación mínima": [0],
-            "Capacidad máxima": [0],
-            "Emisiones": [0],
-            "Eficiencia": [100],
-            "Renovable": [False]
-        })
-
-        st.session_state.datos = pd.concat(
-            [st.session_state.datos, nueva_fila],
-            ignore_index=True
-        )
-
-with col2:
-
-    if st.button("➖ Eliminar último generador"):
-
-        if len(st.session_state.datos) > 1:
-
-            st.session_state.datos = (
-                st.session_state.datos.iloc[:-1]
-                .reset_index(drop=True)
-            )
 
 # ---------------------------------------------------
 # TABLA EDITABLE
@@ -116,6 +81,41 @@ datos = st.data_editor(
 )
 
 st.session_state.datos = datos
+# ---------------------------------------------------
+# BOTONES AGREGAR Y ELIMINAR
+# ---------------------------------------------------
+
+col1, col2 = st.columns(2)
+
+with col1:
+
+    if st.button("➕ Agregar generador"):
+
+        nueva_fila = pd.DataFrame({
+            "Generador": ["Nuevo"],
+            "Costo": [0],
+            "Generación mínima": [0],
+            "Capacidad máxima": [0],
+            "Emisiones": [0],
+            "Eficiencia": [100],
+            "Renovable": [False]
+        })
+
+        st.session_state.datos = pd.concat(
+            [st.session_state.datos, nueva_fila],
+            ignore_index=True
+        )
+
+with col2:
+
+    if st.button("➖ Eliminar último generador"):
+
+        if len(st.session_state.datos) > 1:
+
+            st.session_state.datos = (
+                st.session_state.datos.iloc[:-1]
+                .reset_index(drop=True)
+            )
 
 # ---------------------------------------------------
 # RESTRICCIONES GLOBALES
