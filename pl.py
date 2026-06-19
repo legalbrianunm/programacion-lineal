@@ -43,6 +43,35 @@ if "datos" not in st.session_state:
 
 st.subheader("Parámetros de los generadores")
 
+
+# ---------------------------------------------------
+# TABLA EDITABLE
+# ---------------------------------------------------
+
+datos = st.data_editor(
+    st.session_state.datos,
+    use_container_width=True,
+    num_rows="fixed",
+    column_config={
+
+        "Generador": st.column_config.TextColumn(),
+
+        "Costo": st.column_config.NumberColumn(step=1),
+
+        "Generación mínima": st.column_config.NumberColumn(step=1),
+
+        "Capacidad máxima": st.column_config.NumberColumn(step=1),
+
+        "Emisiones": st.column_config.NumberColumn(step=1),
+
+        "Eficiencia": st.column_config.NumberColumn(step=1),
+
+        "Renovable": st.column_config.CheckboxColumn()
+
+    }
+)
+
+st.session_state.datos = datos
 # ---------------------------------------------------
 # BOTONES AGREGAR Y ELIMINAR
 # ---------------------------------------------------
@@ -78,35 +107,6 @@ with col2:
                 st.session_state.datos.iloc[:-1]
                 .reset_index(drop=True)
             )
-
-# ---------------------------------------------------
-# TABLA EDITABLE
-# ---------------------------------------------------
-
-datos = st.data_editor(
-    st.session_state.datos,
-    use_container_width=True,
-    num_rows="fixed",
-    column_config={
-
-        "Generador": st.column_config.TextColumn(),
-
-        "Costo": st.column_config.NumberColumn(step=1),
-
-        "Generación mínima": st.column_config.NumberColumn(step=1),
-
-        "Capacidad máxima": st.column_config.NumberColumn(step=1),
-
-        "Emisiones": st.column_config.NumberColumn(step=1),
-
-        "Eficiencia": st.column_config.NumberColumn(step=1),
-
-        "Renovable": st.column_config.CheckboxColumn()
-
-    }
-)
-
-st.session_state.datos = datos
 
 # ---------------------------------------------------
 # RESTRICCIONES GLOBALES
