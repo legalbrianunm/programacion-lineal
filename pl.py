@@ -278,24 +278,39 @@ if st.button("Optimizar"):
                 solucion,
                 use_container_width=True
             )
+###############################
+col1, col2, col3 = st.columns(3)
 
-            st.metric(
+with col1:
 
-                "Costo mínimo",
+    st.metric(
+        "Costo mínimo",
+        f"${resultado.fun:,.2f}"
+    )
 
-                f"${resultado.fun:,.2f}"
+with col2:
 
-            )
-############################
+    emisiones_totales = np.sum(
+        resultado.x * emisiones
+    )
 
-            emisiones_totales = np.sum(
-    resultado.x * emisiones
-)
+    st.metric(
+        "Emisiones totales",
+        f"{emisiones_totales:,.2f} kg CO₂"
+    )
 
-st.metric(
-    "Emisiones totales generadas",
-    f"{emisiones_totales:,.2f} kg CO₂"
-)
+with col3:
+
+    energia_renovable = np.sum(
+        resultado.x * renovables * eficiencia
+    )
+
+    st.metric(
+        "Energía renovable útil",
+        f"{energia_renovable:,.2f} MWh"
+    )
+
+    ######################################
             energia_renovable = np.sum(
 
                 resultado.x *
