@@ -43,7 +43,6 @@ if "datos" not in st.session_state:
 
 st.subheader("Parámetros de los generadores")
 
-
 # ---------------------------------------------------
 # TABLA EDITABLE
 # ---------------------------------------------------
@@ -72,6 +71,7 @@ datos = st.data_editor(
 )
 
 st.session_state.datos = datos
+
 # ---------------------------------------------------
 # BOTONES AGREGAR Y ELIMINAR
 # ---------------------------------------------------
@@ -307,14 +307,48 @@ if st.button("Optimizar"):
                     f"{energia_renovable:,.2f} MWh"
                 )
 
+            # ----------------------------------------
+            # GRÁFICO DE PRODUCCIÓN
+            # ----------------------------------------
+
             st.subheader(
                 "Distribución de la generación"
             )
 
             st.bar_chart(
+
                 solucion.set_index(
                     "Generador"
                 )
+
+            )
+
+            # ----------------------------------------
+            # GRÁFICO DE EMISIONES
+            # ----------------------------------------
+
+            emisiones_generador = pd.DataFrame({
+
+                "Generador": datos["Generador"],
+
+                "Emisiones (kg CO₂)": (
+
+                    resultado.x * emisiones
+
+                ).round(2)
+
+            })
+
+            st.subheader(
+                "Emisiones generadas por cada fuente"
+            )
+
+            st.bar_chart(
+
+                emisiones_generador.set_index(
+                    "Generador"
+                )
+
             )
 
         else:
