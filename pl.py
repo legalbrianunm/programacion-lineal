@@ -262,13 +262,13 @@ if st.button("Optimizar"):
                 "Generador": datos["Generador"],
             
                 "Producción óptima (MWh)": resultado.x.round(2),
-            
-                "Costo total (USD)": (
-                    resultado.x * costos
-                ).round(2),
-            
+
                 "Emisiones totales (kg CO₂)": (
                     resultado.x * emisiones
+                ).round(2),
+                
+                "Costo total (USD)": (
+                    resultado.x * costos
                 ).round(2),
             
             })
@@ -360,7 +360,7 @@ if st.button("Optimizar"):
 
                 st.bar_chart(
 
-                    solucion.set_index(
+                    resultado.x.round(2).set_index(
                         "Generador"
                     )
 
