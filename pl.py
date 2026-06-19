@@ -308,53 +308,23 @@ if st.button("Optimizar"):
                 )
 
             # ----------------------------------------
-            # GRÁFICO DE PRODUCCIÓN
-            # ----------------------------------------
-
-            st.subheader(
-                "Distribución de la generación"
-            )
-
-            st.bar_chart(
-
-                solucion.set_index(
-                    "Generador"
-                )
-
-            )
-
-            # ----------------------------------------
-            # GRÁFICO DE EMISIONES
-            # ----------------------------------------
-
-            emisiones_generador = pd.DataFrame({
-
-                "Generador": datos["Generador"],
-
-                "Emisiones (kg CO₂)": (
-
-                    resultado.x * emisiones
-
-                ).round(2)
-
-            })
-
-            st.subheader(
-                "Emisiones generadas por cada fuente"
-            )
-
-            st.bar_chart(
-
-                emisiones_generador.set_index(
-                    "Generador"
-                )
-
-            )
-
-        # ----------------------------------------
-# GRÁFICO DE COSTOS
+# GRÁFICOS
 # ----------------------------------------
 
+# Emisiones por generador
+emisiones_generador = pd.DataFrame({
+
+    "Generador": datos["Generador"],
+
+    "Emisiones (kg CO₂)": (
+
+        resultado.x * emisiones
+
+    ).round(2)
+
+})
+
+# Costos por generador
 costos_generador = pd.DataFrame({
 
     "Generador": datos["Generador"],
@@ -366,6 +336,58 @@ costos_generador = pd.DataFrame({
     ).round(2)
 
 })
+
+st.subheader("Análisis de resultados")
+
+col1, col2, col3 = st.columns(3)
+
+# ----------------------------------------
+# PRODUCCIÓN
+# ----------------------------------------
+
+with col1:
+
+    st.markdown("### 🔵 Producción")
+
+    st.bar_chart(
+
+        solucion.set_index(
+            "Generador"
+        )
+
+    )
+
+# ----------------------------------------
+# EMISIONES
+# ----------------------------------------
+
+with col2:
+
+    st.markdown("### 🔴 Emisiones")
+
+    st.bar_chart(
+
+        emisiones_generador.set_index(
+            "Generador"
+        )
+
+    )
+
+# ----------------------------------------
+# COSTOS
+# ----------------------------------------
+
+with col3:
+
+    st.markdown("### 🟢 Costos")
+
+    st.bar_chart(
+
+        costos_generador.set_index(
+            "Generador"
+        )
+
+    )
 
 st.subheader(
     "Dinero utilizado por cada fuente"
