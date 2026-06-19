@@ -316,7 +316,7 @@ if st.button("Optimizar"):
                     "Generador"
                 )
             )
-
+print(str(solucion))
             st.bar_chart(
                 solucion.set_index(
                     "Generador"
