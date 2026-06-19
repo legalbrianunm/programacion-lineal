@@ -43,44 +43,6 @@ if "datos" not in st.session_state:
 
 st.subheader("Parámetros de los generadores")
 
-
-# ---------------------------------------------------
-# TABLA EDITABLE
-# ---------------------------------------------------
-
-datos = st.data_editor(
-    st.session_state.datos,
-    use_container_width=True,
-    num_rows="fixed",
-    column_config={
-
-        "Generador": st.column_config.TextColumn(),
-
-        "Costo": st.column_config.NumberColumn(
-            step=1
-        ),
-
-        "Generación mínima": st.column_config.NumberColumn(
-            step=1
-        ),
-
-        "Capacidad máxima": st.column_config.NumberColumn(
-            step=1
-        ),
-
-        "Emisiones": st.column_config.NumberColumn(
-            step=1
-        ),
-
-        "Eficiencia": st.column_config.NumberColumn(
-            step=1
-        ),
-
-        "Renovable": st.column_config.CheckboxColumn()
-    }
-)
-
-st.session_state.datos = datos
 # ---------------------------------------------------
 # BOTONES AGREGAR Y ELIMINAR
 # ---------------------------------------------------
@@ -116,6 +78,35 @@ with col2:
                 st.session_state.datos.iloc[:-1]
                 .reset_index(drop=True)
             )
+
+# ---------------------------------------------------
+# TABLA EDITABLE
+# ---------------------------------------------------
+
+datos = st.data_editor(
+    st.session_state.datos,
+    use_container_width=True,
+    num_rows="fixed",
+    column_config={
+
+        "Generador": st.column_config.TextColumn(),
+
+        "Costo": st.column_config.NumberColumn(step=1),
+
+        "Generación mínima": st.column_config.NumberColumn(step=1),
+
+        "Capacidad máxima": st.column_config.NumberColumn(step=1),
+
+        "Emisiones": st.column_config.NumberColumn(step=1),
+
+        "Eficiencia": st.column_config.NumberColumn(step=1),
+
+        "Renovable": st.column_config.CheckboxColumn()
+
+    }
+)
+
+st.session_state.datos = datos
 
 # ---------------------------------------------------
 # RESTRICCIONES GLOBALES
@@ -278,66 +269,53 @@ if st.button("Optimizar"):
                 solucion,
                 use_container_width=True
             )
-###############################
-col1, col2, col3 = st.columns(3)
 
-with col1:
+            # ----------------------------------------
+            # MÉTRICAS
+            # ----------------------------------------
 
-    st.metric(
-        "Costo mínimo",
-        f"${resultado.fun:,.2f}"
-    )
+            emisiones_totales = np.sum(
+                resultado.x * emisiones
+            )
 
-with col2:
-
-    emisiones_totales = np.sum(
-        resultado.x * emisiones
-    )
-
-    st.metric(
-        "Emisiones totales",
-        f"{emisiones_totales:,.2f} kg CO₂"
-    )
-
-with col3:
-
-    energia_renovable = np.sum(
-        resultado.x * renovables * eficiencia
-    )
-
-    st.metric(
-        "Energía renovable útil",
-        f"{energia_renovable:,.2f} MWh"
-    )
-
-    ######################################
             energia_renovable = np.sum(
-
                 resultado.x *
                 renovables *
                 eficiencia
-
             )
 
-            st.write(
-                f"**Emisiones totales:** "
-                f"{emisiones_totales:,.2f} kg CO₂"
-            )
+            col1, col2, col3 = st.columns(3)
 
-            st.write(
-                f"**Energía renovable útil:** "
-                f"{energia_renovable:,.2f} MWh"
-            )
+            with col1:
+
+                st.metric(
+                    "Costo mínimo",
+                    f"${resultado.fun:,.2f}"
+                )
+
+            with col2:
+
+                st.metric(
+                    "Emisiones totales",
+                    f"{emisiones_totales:,.2f} kg CO₂"
+                )
+
+            with col3:
+
+                st.metric(
+                    "Energía renovable útil",
+                    f"{energia_renovable:,.2f} MWh"
+                )
 
             st.subheader(
                 "Distribución de la generación"
             )
 
-            grafico = solucion.set_index(
-                "Generador"
+            st.bar_chart(
+                solucion.set_index(
+                    "Generador"
+                )
             )
-
-            st.bar_chart(grafico)
 
         else:
 
@@ -347,4 +325,6 @@ with col3:
 
     except Exception as e:
 
-        st.error(f"Error: {e}")
+        st.error(
+            f"Error: {e}"
+        )
