@@ -286,13 +286,16 @@ if st.button("Optimizar"):
                 f"${resultado.fun:,.2f}"
 
             )
+############################
 
             emisiones_totales = np.sum(
+    resultado.x * emisiones
+)
 
-                resultado.x * emisiones
-
-            )
-
+st.metric(
+    "Emisiones totales generadas",
+    f"{emisiones_totales:,.2f} kg CO₂"
+)
             energia_renovable = np.sum(
 
                 resultado.x *
