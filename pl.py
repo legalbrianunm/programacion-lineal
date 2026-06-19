@@ -62,28 +62,28 @@ col1, col2, col3 = st.columns(3)
 with col1:
     energia_requerida = st.number_input(
         "Energía útil requerida (MWh)",
-        value=450,
-        step=1
+        value=450.0,
+        step=1.0
     )
 
 with col2:
     minimo_renovable = st.number_input(
         "Mínimo renovable (MWh)",
-        value=135,
-        step=1
+        value=135.0,
+        step=1.0
     )
 
 with col3:
     emisiones_max = st.number_input(
         "Máximo CO₂ (kg)",
-        value=40000,
-        step=1
+        value=40000.0,
+        step=1.0
     )
 
 presupuesto_max = st.number_input(
     "Presupuesto máximo (USD)",
-    value=15000,
-    step=1
+    value=15000.0,
+    step=1.0
 )
 
 # -----------------------------
