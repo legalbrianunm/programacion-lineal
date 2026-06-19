@@ -258,13 +258,27 @@ if st.button("Optimizar"):
             )
 
             solucion = pd.DataFrame({
-
+            
                 "Generador": datos["Generador"],
-
-                "Producción óptima (MWh)": (
-                    resultado.x.round(2)
-                )
-
+            
+                "Producción óptima (MWh)": resultado.x.round(2),
+            
+                "Costo unitario (USD/MWh)": costos.round(2),
+            
+                "Costo total (USD)": (
+                    resultado.x * costos
+                ).round(2),
+            
+                "Emisiones unitarias (kg CO₂/MWh)": emisiones.round(2),
+            
+                "Emisiones totales (kg CO₂)": (
+                    resultado.x * emisiones
+                ).round(2),
+            
+                "Energía útil (MWh)": (
+                    resultado.x * eficiencia
+                ).round(2)
+            
             })
 
             st.subheader("Resultado")
