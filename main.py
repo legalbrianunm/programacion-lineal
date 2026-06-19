@@ -1,199 +1,187 @@
-
 import streamlit as st
 import numpy as np
-from scipy.optimize import milp, LinearConstraint, Bounds
+import pandas as pd
+from scipy.optimize import linprog
 
-st.set_page_config(page_title="Optimización Energética", layout="wide")
+st.set_page_config(
+    page_title="Optimización de Microgrid",
+    layout="wide"
+)
 
-st.title("🔋 Optimización de la Matriz Energética")
+st.title("⚡ Optimización de una Microgrid")
 
 st.markdown("""
-Modelo de programación lineal para minimizar el costo de generación energética.
+Minimizar el costo total de operación cumpliendo:
+
+- Energía útil requerida = 450 MWh
+- Emisiones ≤ límite establecido
+- Energía renovable mínima
+- Presupuesto máximo
+- Capacidades mínimas y máximas
 """)
 
-variables = ["Diésel", "Gas", "Solar", "Biomasa", "Eólica", "Batería"]
+# Datos iniciales
+fuentes = [
+    "Diésel",
+    "Gas",
+    "Solar",
+    "Biomasa",
+    "Eólica",
+    "Batería"
+]
 
-# -------------------------
-# Función objetivo
-# -------------------------
+datos = pd.DataFrame({
+    "Fuente": fuentes,
+    "Costo": [120, 80, 10, 50, 5, 30],
+    "Mínimo": [30, 20, 0, 10, 0, 0],
+    "Máximo": [300, 400, 150, 100, 120, 80],
+    "Emisiones": [800, 400, 0, 50, 0, 0],
+    "Eficiencia": [0.85, 0.90, 1.00, 0.80, 1.00, 0.90],
+    "Renovable": [0, 0, 1, 1, 1, 0]
+})
 
-st.header("Función Objetivo (Costo por MW)")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    c_d = st.number_input("Diésel", value=120.0)
-    c_g = st.number_input("Gas", value=80.0)
-
-with col2:
-    c_s = st.number_input("Solar", value=10.0)
-    c_b = st.number_input("Biomasa", value=50.0)
-
-with col3:
-    c_e = st.number_input("Eólica", value=5.0)
-    c_ba = st.number_input("Batería", value=30.0)
-
-c = [c_d, c_g, c_s, c_b, c_e, c_ba]
-
-# -------------------------
-# Parámetros globales
-# -------------------------
-
-st.header("Restricciones Globales")
+st.header("Parámetros del problema")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    demanda = st.number_input(
-        "Energía requerida",
+    energia_objetivo = st.number_input(
+        "Energía útil requerida (MWh)",
         value=450.0,
         min_value=0.0
     )
 
-    renovables_min = st.number_input(
-        "Mínimo energía renovable",
+    renovable_min = st.number_input(
+        "Mínimo de energía renovable útil (MWh)",
         value=135.0,
         min_value=0.0
     )
 
 with col2:
     emisiones_max = st.number_input(
-        "Máximo emisiones",
+        "Máximo de emisiones (kg CO₂)",
         value=40000.0,
         min_value=0.0
     )
 
     presupuesto_max = st.number_input(
-        "Presupuesto máximo",
+        "Presupuesto máximo (USD)",
         value=15000.0,
         min_value=0.0
     )
 
-# -------------------------
-# Matriz de coeficientes
-# -------------------------
+st.header("Datos de los Generadores")
 
-st.header("Coeficientes de las Restricciones")
-
-st.subheader("Eficiencia Energética")
-
-energia = [
-    st.number_input(f"{v}", value=float(x), key=f"en_{i}")
-    for i, x in enumerate([0.85, 0.90, 1.0, 0.80, 1.0, 0.90])
-]
-
-st.subheader("Energías Renovables")
-
-renovables = [
-    st.number_input(f"{v}", value=float(x), key=f"ren_{i}")
-    for i, x in enumerate([0, 0, 1, 0.8, 1, 0])
-]
-
-st.subheader("Emisiones")
-
-emisiones = [
-    st.number_input(f"{v}", value=float(x), key=f"emi_{i}")
-    for i, x in enumerate([800, 400, 0, 50, 0, 0])
-]
-
-# La restricción de presupuesto utiliza los costos
-presupuesto = c.copy()
-
-A = [
-    energia,
-    renovables,
-    emisiones,
-    presupuesto
-]
-
-bl = [
-    demanda,
-    renovables_min,
-    -np.inf,
-    -np.inf
-]
-
-bu = [
-    demanda,
-    np.inf,
-    emisiones_max,
-    presupuesto_max
-]
-
-constraints = LinearConstraint(A, bl, bu)
-
-# -------------------------
-# Límites de variables
-# -------------------------
-
-st.header("Límites de Generación (MW)")
-
-lb = []
-ub = []
-
-for i, v in enumerate(variables):
-
-    c1, c2 = st.columns(2)
-
-    with c1:
-        minimo = st.number_input(
-            f"{v} mínimo",
-            value=float([30, 20, 0, 10, 0, 0][i]),
-            key=f"lb_{i}"
-        )
-
-    with c2:
-        maximo = st.number_input(
-            f"{v} máximo",
-            value=float([400, 400, 150, 100, 120, 80][i]),
-            key=f"ub_{i}"
-        )
-
-    lb.append(minimo)
-    ub.append(maximo)
-
-bounds = Bounds(lb=lb, ub=ub)
-
-# -------------------------
-# Resolver
-# -------------------------
+df = st.data_editor(
+    datos,
+    use_container_width=True,
+    num_rows="fixed"
+)
 
 if st.button("🚀 Calcular Optimización"):
 
     try:
 
-        res = milp(
-            c=c,
-            constraints=constraints,
+        costos = df["Costo"].to_numpy(dtype=float)
+        minimos = df["Mínimo"].to_numpy(dtype=float)
+        maximos = df["Máximo"].to_numpy(dtype=float)
+        emisiones = df["Emisiones"].to_numpy(dtype=float)
+        eficiencia = df["Eficiencia"].to_numpy(dtype=float)
+        renovable = df["Renovable"].to_numpy(dtype=float)
+
+        # Restricciones <=
+
+        A_ub = [
+            emisiones,
+            costos,
+            -(renovable * eficiencia)
+        ]
+
+        b_ub = [
+            emisiones_max,
+            presupuesto_max,
+            -renovable_min
+        ]
+
+        # Restricción de igualdad
+        A_eq = [eficiencia]
+        b_eq = [energia_objetivo]
+
+        bounds = [
+            (float(minimos[i]), float(maximos[i]))
+            for i in range(len(fuentes))
+        ]
+
+        resultado = linprog(
+            c=costos,
+            A_ub=A_ub,
+            b_ub=b_ub,
+            A_eq=A_eq,
+            b_eq=b_eq,
             bounds=bounds,
-            integrality=[0] * 6
+            method="highs"
         )
 
-        if res.success:
+        if resultado.success:
 
-            st.success("Se encontró una solución óptima")
+            st.success("✅ Solución óptima encontrada")
 
-            st.metric(
-                "Costo Total Mínimo",
-                f"USD {res.fun:,.2f}"
+            solucion = pd.DataFrame({
+                "Fuente": fuentes,
+                "Generación (MWh)": np.round(resultado.x, 2)
+            })
+
+            st.subheader("Generación óptima")
+
+            st.dataframe(
+                solucion,
+                use_container_width=True
             )
 
-            resultado = {
-                "Tecnología": variables,
-                "Generación (MW)": np.round(res.x, 2)
-            }
+            costo_total = np.dot(costos, resultado.x)
 
-            st.table(resultado)
+            emisiones_totales = np.dot(
+                emisiones,
+                resultado.x
+            )
 
-            st.subheader("Vector solución")
+            energia_util = np.dot(
+                eficiencia,
+                resultado.x
+            )
 
-            st.write(np.round(res.x, 4))
+            energia_renovable = np.dot(
+                renovable * eficiencia,
+                resultado.x
+            )
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric(
+                "Costo Total",
+                f"${costo_total:,.2f}"
+            )
+
+            col2.metric(
+                "Emisiones",
+                f"{emisiones_totales:,.0f} kg"
+            )
+
+            col3.metric(
+                "Energía Útil",
+                f"{energia_util:,.2f} MWh"
+            )
+
+            col4.metric(
+                "Energía Renovable",
+                f"{energia_renovable:,.2f} MWh"
+            )
 
         else:
 
-            st.error("No se encontró solución factible")
+            st.error("❌ No existe una solución factible")
 
-            st.write(res.message)
+            st.write(resultado.message)
 
     except Exception as e:
-        st.error(str(e))
+        st.error(f"Error: {str(e)}")
