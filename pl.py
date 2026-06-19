@@ -293,10 +293,10 @@ if st.button("Optimizar"):
             with col1:
 
                 st.metric(
-                    "Costo mínimo",
-                    f"${resultado.fun:,.2f}"
+                    "Energía renovable útil",
+                    f"{energia_renovable:,.2f} MWh"
                 )
-
+                
             with col2:
 
                 st.metric(
@@ -304,11 +304,12 @@ if st.button("Optimizar"):
                     f"{emisiones_totales:,.2f} kg CO₂"
                 )
 
+
             with col3:
 
                 st.metric(
-                    "Energía renovable útil",
-                    f"{energia_renovable:,.2f} MWh"
+                    "Costo mínimo",
+                    f"${resultado.fun:,.2f}"
                 )
 
             # ----------------------------------------
