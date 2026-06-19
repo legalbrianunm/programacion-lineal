@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
-
 from scipy.optimize import milp, LinearConstraint, Bounds
 
 st.set_page_config(
@@ -34,138 +32,48 @@ Sujeto a las siguientes restricciones:
 if "datos" not in st.session_state:
 
     st.session_state.datos = pd.DataFrame({
-
-        "Generador": [
-
-            "Diésel",
-            "Gas",
-            "Solar",
-            "Biomasa",
-            "Eólica",
-            "Batería"
-
-        ],
-
-        "Costo": [
-
-            120,
-            80,
-            10,
-            50,
-            5,
-            30
-
-        ],
-
-        "Generación mínima": [
-
-            30,
-            20,
-            0,
-            10,
-            0,
-            0
-
-        ],
-
-        "Capacidad máxima": [
-
-            300,
-            400,
-            150,
-            100,
-            120,
-            80
-
-        ],
-
-        "Emisiones": [
-
-            800,
-            400,
-            0,
-            50,
-            0,
-            0
-
-        ],
-
-        "Eficiencia": [
-
-            85,
-            90,
-            100,
-            80,
-            100,
-            90
-
-        ],
-
-        "Renovable": [
-
-            False,
-            False,
-            True,
-            True,
-            True,
-            False
-
-        ]
-
+        "Generador": ["Diésel", "Gas", "Solar", "Biomasa", "Eólica", "Batería"],
+        "Costo": [120, 80, 10, 50, 5, 30],
+        "Generación mínima": [30, 20, 0, 10, 0, 0],
+        "Capacidad máxima": [300, 400, 150, 100, 120, 80],
+        "Emisiones": [800, 400, 0, 50, 0, 0],
+        "Eficiencia": [85, 90, 100, 80, 100, 90],
+        "Renovable": [False, False, True, True, True, False]
     })
+
+st.subheader("Parámetros de los generadores")
 
 # ---------------------------------------------------
 # TABLA EDITABLE
 # ---------------------------------------------------
 
-st.subheader("Parámetros de los generadores")
-
 datos = st.data_editor(
-
     st.session_state.datos,
-
     use_container_width=True,
-
     num_rows="fixed",
-
     column_config={
 
-        "Generador":
+        "Generador": st.column_config.TextColumn(),
 
-            st.column_config.TextColumn(),
+        "Costo": st.column_config.NumberColumn(step=1),
 
-        "Costo":
+        "Generación mínima": st.column_config.NumberColumn(step=1),
 
-            st.column_config.NumberColumn(step=1),
+        "Capacidad máxima": st.column_config.NumberColumn(step=1),
 
-        "Generación mínima":
+        "Emisiones": st.column_config.NumberColumn(step=1),
 
-            st.column_config.NumberColumn(step=1),
+        "Eficiencia": st.column_config.NumberColumn(step=1),
 
-        "Capacidad máxima":
-
-            st.column_config.NumberColumn(step=1),
-
-        "Emisiones":
-
-            st.column_config.NumberColumn(step=1),
-
-        "Eficiencia":
-
-            st.column_config.NumberColumn(step=1),
-
-        "Renovable":
-
-            st.column_config.CheckboxColumn()
+        "Renovable": st.column_config.CheckboxColumn()
 
     }
-
 )
 
 st.session_state.datos = datos
 
 # ---------------------------------------------------
-# BOTONES
+# BOTONES AGREGAR Y ELIMINAR
 # ---------------------------------------------------
 
 col1, col2 = st.columns(2)
@@ -175,35 +83,18 @@ with col1:
     if st.button("➕ Agregar generador"):
 
         nueva_fila = pd.DataFrame({
-
             "Generador": ["Nuevo"],
-
             "Costo": [0],
-
             "Generación mínima": [0],
-
             "Capacidad máxima": [0],
-
             "Emisiones": [0],
-
             "Eficiencia": [100],
-
             "Renovable": [False]
-
         })
 
         st.session_state.datos = pd.concat(
-
-            [
-
-                st.session_state.datos,
-
-                nueva_fila
-
-            ],
-
+            [st.session_state.datos, nueva_fila],
             ignore_index=True
-
         )
 
 with col2:
@@ -213,15 +104,12 @@ with col2:
         if len(st.session_state.datos) > 1:
 
             st.session_state.datos = (
-
                 st.session_state.datos.iloc[:-1]
-
                 .reset_index(drop=True)
-
             )
 
 # ---------------------------------------------------
-# RESTRICCIONES
+# RESTRICCIONES GLOBALES
 # ---------------------------------------------------
 
 st.subheader("Restricciones globales")
@@ -231,51 +119,35 @@ col1, col2, col3 = st.columns(3)
 with col1:
 
     energia_requerida = st.number_input(
-
         "Energía útil requerida (MWh)",
-
         value=450.0,
-
         step=1.0
-
     )
 
 with col2:
 
     minimo_renovable = st.number_input(
-
         "Mínimo renovable (MWh)",
-
         value=135.0,
-
         step=1.0
-
     )
 
 with col3:
 
     emisiones_max = st.number_input(
-
         "Máximo CO₂ (kg)",
-
         value=40000.0,
-
         step=1.0
-
     )
 
 presupuesto_max = st.number_input(
-
     "Presupuesto máximo (USD)",
-
     value=15000.0,
-
     step=1.0
-
 )
 
 # ---------------------------------------------------
-# OPTIMIZAR
+# BOTÓN OPTIMIZAR
 # ---------------------------------------------------
 
 if st.button("Optimizar"):
@@ -285,57 +157,41 @@ if st.button("Optimizar"):
         costos = datos["Costo"].values.astype(float)
 
         eficiencia = (
-
-            datos["Eficiencia"]
-
-            .values.astype(float)
-
-            / 100
-
+            datos["Eficiencia"].values.astype(float) / 100
         )
 
         emisiones = (
-
-            datos["Emisiones"]
-
-            .values.astype(float)
-
+            datos["Emisiones"].values.astype(float)
         )
 
         renovables = (
-
-            datos["Renovable"]
-
-            .values.astype(int)
-
+            datos["Renovable"].values.astype(int)
         )
 
         generacion_min = (
-
-            datos["Generación mínima"]
-
-            .values.astype(float)
-
+            datos["Generación mínima"].values.astype(float)
         )
 
         capacidad_max = (
-
-            datos["Capacidad máxima"]
-
-            .values.astype(float)
-
+            datos["Capacidad máxima"].values.astype(float)
         )
 
+        # ----------------------------------------
+        # MATRIZ DE RESTRICCIONES
         # ----------------------------------------
 
         A = np.array([
 
+            # Energía útil total
             eficiencia,
 
+            # Energía renovable
             renovables * eficiencia,
 
+            # Emisiones
             emisiones,
 
+            # Presupuesto
             costos
 
         ])
@@ -365,21 +221,14 @@ if st.button("Optimizar"):
         ]
 
         constraints = LinearConstraint(
-
             A,
-
             bl,
-
             bu
-
         )
 
         bounds = Bounds(
-
             lb=generacion_min,
-
             ub=capacidad_max
-
         )
 
         resultado = milp(
@@ -395,67 +244,30 @@ if st.button("Optimizar"):
         )
 
         # ----------------------------------------
+        # RESULTADOS
+        # ----------------------------------------
 
         if resultado.success:
 
             st.success(
-
                 "Se encontró una solución óptima."
-
             )
-
-            # ----------------------------------------
-            # DATAFRAMES
-            # ----------------------------------------
 
             solucion = pd.DataFrame({
 
-                "Generador":
+                "Generador": datos["Generador"],
 
-                    datos["Generador"],
-
-                "Producción óptima (MWh)":
-
+                "Producción óptima (MWh)": (
                     resultado.x.round(2)
+                )
 
             })
-
-            emisiones_generador = pd.DataFrame({
-
-                "Generador":
-
-                    datos["Generador"],
-
-                "Emisiones (kg CO₂)":
-
-                    (resultado.x * emisiones).round(2)
-
-            })
-
-            dinero_generador = pd.DataFrame({
-
-                "Generador":
-
-                    datos["Generador"],
-
-                "Dinero utilizado (USD)":
-
-                    (resultado.x * costos).round(2)
-
-            })
-
-            # ----------------------------------------
-            # TABLA
-            # ----------------------------------------
 
             st.subheader("Resultado")
 
             st.dataframe(
-
                 solucion,
-
                 use_container_width=True
-
             )
 
             # ----------------------------------------
@@ -463,19 +275,13 @@ if st.button("Optimizar"):
             # ----------------------------------------
 
             emisiones_totales = np.sum(
-
                 resultado.x * emisiones
-
             )
 
             energia_renovable = np.sum(
-
-                resultado.x
-
-                * renovables
-
-                * eficiencia
-
+                resultado.x *
+                renovables *
+                eficiencia
             )
 
             col1, col2, col3 = st.columns(3)
@@ -483,167 +289,103 @@ if st.button("Optimizar"):
             with col1:
 
                 st.metric(
-
                     "Costo mínimo",
-
                     f"${resultado.fun:,.2f}"
-
                 )
 
             with col2:
 
                 st.metric(
-
                     "Emisiones totales",
-
-                    f"{emisiones_totales:,.2f} kg"
-
+                    f"{emisiones_totales:,.2f} kg CO₂"
                 )
 
             with col3:
 
                 st.metric(
-
                     "Energía renovable útil",
-
                     f"{energia_renovable:,.2f} MWh"
-
                 )
 
             # ----------------------------------------
-            # GRÁFICOS
+            # GRÁFICO DE PRODUCCIÓN
             # ----------------------------------------
 
-            st.subheader("Análisis de resultados")
+            st.subheader(
+                "Distribución de la generación"
+            )
 
-            col1, col2, col3 = st.columns(3)
+            st.bar_chart(
 
-            # PRODUCCIÓN
-
-            with col1:
-
-                fig1 = px.bar(
-
-                    solucion,
-
-                    x="Generador",
-
-                    y="Producción óptima (MWh)",
-
-                    title="Producción",
-
-                    text_auto=True,
-
-                    color_discrete_sequence=[
-
-                        "royalblue"
-
-                    ]
-
+                solucion.set_index(
+                    "Generador"
                 )
 
-                fig1.update_layout(
+            )
 
-                    xaxis_tickangle=-45
+            # ----------------------------------------
+            # GRÁFICO DE EMISIONES
+            # ----------------------------------------
 
+            emisiones_generador = pd.DataFrame({
+
+                "Generador": datos["Generador"],
+
+                "Emisiones (kg CO₂)": (
+
+                    resultado.x * emisiones
+
+                ).round(2)
+
+            })
+
+            st.subheader(
+                "Emisiones generadas por cada fuente"
+            )
+
+            st.bar_chart(
+
+                emisiones_generador.set_index(
+                    "Generador"
                 )
 
-                st.plotly_chart(
+            )
 
-                    fig1,
+        # ----------------------------------------
+# GRÁFICO DE COSTOS
+# ----------------------------------------
 
-                    use_container_width=True
+costos_generador = pd.DataFrame({
 
-                )
+    "Generador": datos["Generador"],
 
-            # EMISIONES
+    "Costo utilizado (USD)": (
 
-            with col2:
+        resultado.x * costos
 
-                fig2 = px.bar(
+    ).round(2)
 
-                    emisiones_generador,
+})
 
-                    x="Generador",
+st.subheader(
+    "Dinero utilizado por cada fuente"
+)
 
-                    y="Emisiones (kg CO₂)",
+st.bar_chart(
 
-                    title="Emisiones",
+    costos_generador.set_index(
+        "Generador"
+    )
 
-                    text_auto=True,
-
-                    color_discrete_sequence=[
-
-                        "firebrick"
-
-                    ]
-
-                )
-
-                fig2.update_layout(
-
-                    xaxis_tickangle=-45
-
-                )
-
-                st.plotly_chart(
-
-                    fig2,
-
-                    use_container_width=True
-
-                )
-
-            # COSTOS
-
-            with col3:
-
-                fig3 = px.bar(
-
-                    dinero_generador,
-
-                    x="Generador",
-
-                    y="Dinero utilizado (USD)",
-
-                    title="Dinero utilizado",
-
-                    text_auto=True,
-
-                    color_discrete_sequence=[
-
-                        "seagreen"
-
-                    ]
-
-                )
-
-                fig3.update_layout(
-
-                    xaxis_tickangle=-45
-
-                )
-
-                st.plotly_chart(
-
-                    fig3,
-
-                    use_container_width=True
-
-                )
-
+)
         else:
 
             st.error(
-
                 "El problema es infactible con las restricciones actuales."
-
             )
 
     except Exception as e:
 
         st.error(
-
             f"Error: {e}"
-
         )
