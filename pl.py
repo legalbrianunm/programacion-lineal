@@ -316,10 +316,10 @@ if st.button("Optimizar"):
                     "Generador"
                 )
             )
-print(solucion)
+
             st.bar_chart(
                 solucion.set_index(
-                    "Generador"
+                    "Producción óptima (MWh)"
                 )
             )
         else:
