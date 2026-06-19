@@ -359,11 +359,9 @@ if st.button("Optimizar"):
                 st.markdown("### Producción")
 
                 st.bar_chart(
-
-                    resultado.x.round(2).set_index(
-                        "Generador"
-                    )
-
+                    solucion.set_index("Generador")[
+                        ["Producción óptima (MWh)"]
+                    ]
                 )
 
             with col2:
