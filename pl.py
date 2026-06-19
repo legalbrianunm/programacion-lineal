@@ -317,11 +317,6 @@ if st.button("Optimizar"):
                 )
             )
 
-            st.bar_chart(
-                solucion.set_index(
-                    "Producción óptima (MWh)"
-                )
-            )
         else:
 
             st.error(
