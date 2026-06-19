@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -395,4 +394,3 @@ if st.button("Optimizar"):
         st.error(
             f"Error: {e}"
         )
-```
